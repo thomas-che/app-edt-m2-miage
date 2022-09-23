@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import {Alert, StyleSheet, Text, View, TouchableOpacity, SafeAreaView} from 'react-native';
 import {Agenda, DateData, AgendaEntry, AgendaSchedule} from 'react-native-calendars';
 import axios from 'axios';
+import { TailwindProvider } from "tailwindcss-react-native";
 
 import {LocaleConfig} from 'react-native-calendars';
 
@@ -158,17 +159,19 @@ export default function App() {
 
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar style="auto" />
-      <Agenda
-        items={items}
-        selected={today}
-        renderItem={renderIem}
-        // If firstDay=1 week starts from Monday. Note that dayNames and dayNamesShort should still start from Sunday
-        firstDay={1}
-        onRefresh={() => getEvent()}
-      />
-    </SafeAreaView>
+    <TailwindProvider>
+      <SafeAreaView style={styles.safe}>
+        <StatusBar style="auto" />
+        <Agenda
+          items={items}
+          selected={today}
+          renderItem={renderIem}
+          // If firstDay=1 week starts from Monday. Note that dayNames and dayNamesShort should still start from Sunday
+          firstDay={1}
+          onRefresh={() => getEvent()}
+        />
+      </SafeAreaView>
+    </TailwindProvider>
 
   );
 }
