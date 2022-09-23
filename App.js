@@ -47,6 +47,37 @@ export default function App() {
     }
   }
 
+  const extractInfo = (summary) => {
+    var type = '';
+    var groupe = '';
+    var cours = '';
+    var salle = '';
+    var prof = '';
+
+    type = summary.split(' ')[0]
+    if(type == "TA") {
+      groupe = summary.split(' ')[1]
+      cours = "TA"
+      return {type, groupe, cours, salle, prof}
+    }
+    const result = summary.substring(3).split(/[A-Z]{2}\.[A-Z]{2}/);
+    groupe = result[0].split(' ')[0]
+    if (groupe != 'SIR' && groupe != 'SIMSA' && groupe != 'ALT') {groupe = ''}
+    if (groupe == '') {
+      cours = result[0]
+    } else {
+      cours = result[0].split(groupe+' ')[1]
+    }
+    if(result[1] && 1 <= result[1].length) salle = result[1].substring(1)
+    try{
+      prof = summary.split(salle)[0].split(cours)[1]
+    } catch (e) {
+      console.log('Error : '+e)
+    }
+
+    return {type, groupe, cours, salle, prof}
+  }
+
   const getEvent = () => {
     var date = new Date()
     setToday(date.toISOString().split('T')[0])
@@ -57,6 +88,8 @@ export default function App() {
 
         const newItems: AgendaSchedule = {};
         Object.keys(data.data.items).forEach(i => {
+          info = extractInfo(data.data.items[i].summary)
+          console.log(info)
           newItem = {
             created: data.data.items[i].created,
             creator: data.data.items[i].creator,
@@ -73,6 +106,7 @@ export default function App() {
             status: data.data.items[i].status,
             summary: data.data.items[i].summary,
             updated: data.data.items[i].updated,
+            info: info
           }
           if(!newItem.summary.includes("SIMSA")){
             if(newItems[data.data.items[i].start.dateTime.substring(0, 10)] != null){
@@ -88,7 +122,7 @@ export default function App() {
         console.log(newItems)
       })
       .catch( error => {
-        console.log('ERROR');
+        console.log('ERROR : ', error);
       })
   }
 
@@ -99,7 +133,7 @@ export default function App() {
   const renderIem = (item) => {
     if(item.start) {
       var sty = styles.itemContainer
-      var styText = null
+      var styText = styles.text
       if(item.summary.includes('TA')){ 
         sty = styles.itemContainerTA 
         styText = styles.textTA
@@ -107,7 +141,12 @@ export default function App() {
       return (
         <View style={sty}>
           <Text style={styText}>{item.start.dateTime.substring(11, 16)} - {item.end.dateTime.substring(11, 16)}</Text>
-          <Text style={styText}>{item.summary}</Text>
+          <View style={styles.cont}>
+            <Text style={styText}>{item.info.type} </Text>
+            <Text style={styText}>{item.info.cours} </Text>
+            <Text style={styles.styTextDroite}>{item.info.salle} </Text>
+            <Text style={styles.styTextDroite}>{item.info.prof}</Text>
+          </View>
         </View>
       )
     }
@@ -138,6 +177,11 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
   },
+  cont : {
+    flexDirection: "row",
+    flexWrap: 'wrap',
+    flex: 1,
+  },
   itemContainer: {
     backgroundColor: 'white',
     flex: 1,
@@ -158,5 +202,13 @@ const styles = StyleSheet.create({
     color: '#989898',
     fontStyle: 'italic',
     fontSize: 11
+  },
+  text : {
+    fontStyle: 'bold',
+  },
+  styTextDroite : {
+    fontStyle: 'bold',
+    justifyContent: 'space-between'
   }
+
 });
